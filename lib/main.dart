@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'src/model/person.dart';
+import 'src/widget/field_widget.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -10,11 +13,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'IMC Calc',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Cálculo de IMC'),
     );
   }
 }
@@ -29,11 +32,52 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  var nameController = TextEditingController();
+  var idadeController = TextEditingController();
+  var alturaController = TextEditingController();
+  var pesoController = TextEditingController();
 
-  void _incrementCounter() {
+  Future<void> _showMyDialog(Person person) async {
+    return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            actions: <Widget>[
+              TextButton(
+                child: const Text("Ok"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+            content: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.15,
+              child: Column(
+                children: [
+                  Text("Nome: ${person.name}"),
+                  Text("É adulto? ${person.isOlder}"),
+                  Text("IMC: ${person.imc}"),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  void _calcImc() {
     setState(() {
-      _counter++;
+      if (nameController.text.isNotEmpty &&
+          idadeController.text.isNotEmpty &&
+          alturaController.text.isNotEmpty &&
+          pesoController.text.isNotEmpty) {
+        var person = Person(
+            name: nameController.text,
+            age: int.parse(idadeController.text),
+            height: double.parse(alturaController.text),
+            weight: double.parse(pesoController.text));
+        _showMyDialog(person);
+      }
     });
   }
 
@@ -43,24 +87,50 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+      body: Card(
+        margin: const EdgeInsets.all(40),
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                FieldWidget(
+                  text: 'Nome',
+                  controller: nameController,
+                  type: 1,
+                ),
+                FieldWidget(
+                  text: 'Idade',
+                  controller: idadeController,
+                  type: 2,
+                ),
+                FieldWidget(
+                  text: 'Altura',
+                  controller: alturaController,
+                  type: 2,
+                ),
+                FieldWidget(
+                  text: 'Peso',
+                  controller: pesoController,
+                  type: 2,
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    _calcImc();
+                  },
+                  child: const Text('Calcular'),
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
+              ],
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
